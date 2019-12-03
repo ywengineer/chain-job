@@ -47,6 +47,26 @@ func (src *KeyValueConf) GetInt64(key string) int64 {
 	return 0
 }
 
+func (src *KeyValueConf) GetUInt64(key string) uint64 {
+	if v, ok := src.Metadata[key]; ok {
+		switch v.(type) {
+		case int:
+			return uint64(v.(int))
+		case int8:
+			return uint64(v.(int8))
+		case int16:
+			return uint64(v.(int16))
+		case int32:
+			return uint64(v.(int32))
+		case int64:
+			return uint64(v.(int64))
+		case uint64:
+			return v.(uint64)
+		}
+	}
+	return 0
+}
+
 type SinkConf struct {
 	Type string `json:"type"`
 	KeyValueConf
