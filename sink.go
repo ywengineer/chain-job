@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type SinkMaker func(conf *SinkConf) Sink
+type SinkMaker func(conf *SinkConf, ctx context.Context, log *zap.Logger) Sink
 
 var sinkMap = make(map[string]SinkMaker)
 
@@ -20,8 +20,7 @@ func RegisterSink(typ string, maker SinkMaker) {
 
 func newSink(conf *SinkConf, ctx context.Context, log *zap.Logger) Sink {
 	if maker, ok := sinkMap[conf.Type]; ok {
-		s := maker(conf)
-		s.Init(conf, ctx, log)
+		s := maker(conf, ctx, log)
 		return s
 	}
 	util.Warn("sink maker [%s] not found", conf.Type)
@@ -29,7 +28,6 @@ func newSink(conf *SinkConf, ctx context.Context, log *zap.Logger) Sink {
 }
 
 type Sink interface {
-	Init(conf *SinkConf, ctx context.Context, log *zap.Logger)
 	DoSink(message *TaskData)
 	Terminated() <-chan bool
 }

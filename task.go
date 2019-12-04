@@ -12,7 +12,7 @@ type TaskData struct {
 	KeyValueConf
 }
 
-type Task struct {
+type task struct {
 	conf       *TaskConf
 	mtx        sync.Mutex
 	log        *zap.Logger
@@ -26,11 +26,11 @@ type Task struct {
 	stopChan   chan bool
 }
 
-func (task *Task) addFilter(filter Filter) {
+func (task *task) addFilter(filter Filter) {
 	task.filters = append(task.filters, filter)
 }
 
-func (task *Task) Run() {
+func (task *task) Run() {
 	task.mtx.Lock()
 	defer task.mtx.Unlock()
 	if !task.terminated {
@@ -58,7 +58,7 @@ func (task *Task) Run() {
 	close(task.stopChan)
 }
 
-func (task *Task) run() {
+func (task *task) run() {
 	for {
 		select {
 		case data, ok := <-task.source.Read():
@@ -76,7 +76,7 @@ func (task *Task) run() {
 	}
 }
 
-func (task *Task) Stop() <-chan bool {
+func (task *task) Stop() <-chan bool {
 	task.mtx.Lock()
 	defer task.mtx.Unlock()
 	if !task.terminated {
@@ -86,9 +86,9 @@ func (task *Task) Stop() <-chan bool {
 	return task.stopChan
 }
 
-func NewTask(conf *TaskConf, parentCtx context.Context, log *zap.Logger) *Task {
+func NewTask(conf *TaskConf, parentCtx context.Context, log *zap.Logger) *task {
 	ctx, cancel := context.WithCancel(parentCtx)
-	task := &Task{
+	task := &task{
 		conf:       conf,
 		ctx:        ctx,
 		stop:       cancel,

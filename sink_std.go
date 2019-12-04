@@ -7,8 +7,10 @@ import (
 )
 
 func init() {
-	RegisterSink("log", func(conf *SinkConf) Sink {
-		return &SinkLog{}
+	RegisterSink("log", func(conf *SinkConf, ctx context.Context, log *zap.Logger) Sink {
+		s := &SinkLog{}
+		s.init(conf, ctx, log)
+		return s
 	})
 }
 
@@ -18,7 +20,7 @@ type SinkLog struct {
 	stop chan bool
 }
 
-func (sl *SinkLog) Init(conf *SinkConf, ctx context.Context, log *zap.Logger) {
+func (sl *SinkLog) init(conf *SinkConf, ctx context.Context, log *zap.Logger) {
 	sl.conf = conf
 	sl.log = log
 	sl.stop = make(chan bool)

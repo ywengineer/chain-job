@@ -6,7 +6,7 @@ import (
 	"go.uber.org/zap"
 )
 
-type SourceMaker func(conf *SourceConf) Source
+type SourceMaker func(conf *SourceConf, ctx context.Context, log *zap.Logger) Source
 
 var sourceMap = make(map[string]SourceMaker)
 
@@ -20,8 +20,7 @@ func RegisterSource(typ string, maker SourceMaker) {
 
 func newSource(conf *SourceConf, ctx context.Context, log *zap.Logger) Source {
 	if maker, ok := sourceMap[conf.Type]; ok {
-		s := maker(conf)
-		s.Init(conf, ctx, log)
+		s := maker(conf, ctx, log)
 		return s
 	}
 	util.Warn("source maker [%s] not found", conf.Type)
@@ -29,7 +28,6 @@ func newSource(conf *SourceConf, ctx context.Context, log *zap.Logger) Source {
 }
 
 type Source interface {
-	Init(conf *SourceConf, ctx context.Context, log *zap.Logger)
 	Read() <-chan *TaskData
 	Terminated() <-chan bool
 }

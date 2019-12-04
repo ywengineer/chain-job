@@ -7,8 +7,10 @@ import (
 )
 
 func init() {
-	RegisterFilter("snowflake-id", func(conf *FilterConf) Filter {
-		return &SnowflakeIDFilter{}
+	RegisterFilter("snowflake-id", func(conf *FilterConf, ctx context.Context, log *zap.Logger) Filter {
+		f := &SnowflakeIDFilter{}
+		f.init(conf, ctx, log)
+		return f
 	})
 }
 
@@ -18,7 +20,7 @@ type SnowflakeIDFilter struct {
 	worker *v2.Worker
 }
 
-func (sif *SnowflakeIDFilter) Init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
+func (sif *SnowflakeIDFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
 	sif.log = log
 	sif.conf = conf
 	if worker, err := v2.NewWorker(conf.GetUInt64("center"), conf.GetUInt64("machine")); err != nil {

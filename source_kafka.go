@@ -11,8 +11,10 @@ import (
 )
 
 func init() {
-	RegisterSource("kafka", func(conf *SourceConf) Source {
-		return &KafkaSource{}
+	RegisterSource("kafka", func(conf *SourceConf, ctx context.Context, log *zap.Logger) Source {
+		s := &KafkaSource{}
+		s.init(conf, ctx, log)
+		return s
 	})
 }
 
@@ -143,7 +145,7 @@ type KafkaSource struct {
 	log      *zap.Logger
 }
 
-func (kafka *KafkaSource) Init(conf *SourceConf, ctx context.Context, log *zap.Logger) {
+func (kafka *KafkaSource) init(conf *SourceConf, ctx context.Context, log *zap.Logger) {
 	kafka.log = log
 	kafka.conf = conf
 	kafka.consumer = newKafkaConsumer(ctx, log,

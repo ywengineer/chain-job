@@ -7,11 +7,15 @@ import (
 )
 
 func init() {
-	RegisterFilter("json", func(conf *FilterConf) Filter {
-		return &JsonFilter{}
+	RegisterFilter("json", func(conf *FilterConf, ctx context.Context, log *zap.Logger) Filter {
+		f := &JsonFilter{}
+		f.init(conf, ctx, log)
+		return f
 	})
-	RegisterFilter("json_array", func(conf *FilterConf) Filter {
-		return &JsonArrayFilter{}
+	RegisterFilter("json_array", func(conf *FilterConf, ctx context.Context, log *zap.Logger) Filter {
+		f := &JsonArrayFilter{}
+		f.init(conf, ctx, log)
+		return f
 	})
 }
 
@@ -20,7 +24,7 @@ type JsonFilter struct {
 	conf *FilterConf
 }
 
-func (jf *JsonFilter) Init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
+func (jf *JsonFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
 	jf.log = log
 	jf.conf = conf
 }
@@ -49,7 +53,7 @@ type JsonArrayFilter struct {
 	conf *FilterConf
 }
 
-func (jaf *JsonArrayFilter) Init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
+func (jaf *JsonArrayFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
 	jaf.log = log
 	jaf.conf = conf
 }
