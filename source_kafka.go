@@ -49,7 +49,7 @@ func newKafkaConsumer(ctx context.Context, log *zap.Logger,
 	/**
 	 * Setup a new Sarama consumer group
 	 */
-	consumer := kConsumer{
+	consumer := &kConsumer{
 		ready: make(chan bool),
 		stop:  make(chan bool),
 		log:   log,
@@ -74,7 +74,7 @@ func newKafkaConsumer(ctx context.Context, log *zap.Logger,
 			close(consumer.mc)
 		}()
 		for {
-			if err := client.Consume(ctx, topicArray, &consumer); err != nil {
+			if err := client.Consume(ctx, topicArray, consumer); err != nil {
 				log.Error("Error from consumer", zap.Error(err))
 			}
 			// check if context was cancelled, signaling that the consumer should stop
@@ -84,7 +84,7 @@ func newKafkaConsumer(ctx context.Context, log *zap.Logger,
 			consumer.ready = make(chan bool)
 		}
 	}()
-	return &consumer
+	return consumer
 }
 
 // Consumer represents a Sarama consumer group consumer
