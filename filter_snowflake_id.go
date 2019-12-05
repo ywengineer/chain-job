@@ -2,8 +2,10 @@ package job
 
 import (
 	"context"
+	"github.com/ywengineer/g-util/util"
 	"github.com/ywengineer/snowflake-golang/pro"
 	"go.uber.org/zap"
+	"sync"
 )
 
 func init() {
@@ -12,6 +14,19 @@ func init() {
 		f.init(conf, ctx, log)
 		return f
 	})
+}
+
+var gsf *pro.Worker
+var mu = sync.Mutex{}
+
+func SetGlobalSnowflakeInfo(center, machine uint64) {
+	mu.Lock()
+	defer mu.Unlock()
+	if gsf == nil {
+		gsf, _ = pro.NewWorker(center, machine)
+	} else {
+		util.Error("global snowflake worker already exists.", gsf.String())
+	}
 }
 
 type SnowflakeIDFilter struct {
@@ -23,10 +38,20 @@ type SnowflakeIDFilter struct {
 func (sif *SnowflakeIDFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
 	sif.log = log
 	sif.conf = conf
-	if worker, err := pro.NewWorker(conf.GetUInt64("center"), conf.GetUInt64("machine")); err != nil {
-		log.Panic("init snowflake uid filter failed.", zap.Error(err))
+	// 如果是全局
+	if conf.GetBool("global") {
+		if gsf == nil {
+			log.Panic("global snowflake filter not set.")
+		} else {
+			sif.worker = gsf
+		}
 	} else {
-		sif.worker = worker
+		//
+		if worker, err := pro.NewWorker(conf.GetUInt64("center"), conf.GetUInt64("machine")); err != nil {
+			log.Panic("init snowflake uid filter failed.", zap.Error(err))
+		} else {
+			sif.worker = worker
+		}
 	}
 }
 
