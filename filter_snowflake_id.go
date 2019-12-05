@@ -2,7 +2,7 @@ package job
 
 import (
 	"context"
-	v2 "github.com/ywengineer/snowflake-golang/v2"
+	"github.com/ywengineer/snowflake-golang/v2"
 	"go.uber.org/zap"
 )
 
