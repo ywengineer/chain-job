@@ -7,6 +7,7 @@ require (
 	github.com/json-iterator/go v1.1.8
 	github.com/klauspost/cpuid v1.2.2 // indirect
 	github.com/ywengineer/g-util v0.0.0-20191203072913-94eb55c42afa
+	github.com/ywengineer/snowflake-golang v0.3.0 // indirect
 	go.uber.org/zap v1.13.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
