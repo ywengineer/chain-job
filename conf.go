@@ -94,16 +94,16 @@ func (src *KeyValueConf) GetUInt64(key string) uint64 {
 }
 
 type SinkConf struct {
-	Type string `json:"type"`
-	KeyValueConf
+	Type         string `json:"type" yaml:"type"`
+	KeyValueConf `json:"metadata" yaml:"metadata"`
 }
 
 type SourceConf struct {
-	Type string `json:"type"`
-	KeyValueConf
+	Type         string `json:"type" yaml:"type"`
+	KeyValueConf `json:"metadata" yaml:"metadata"`
 }
 
 type FilterConf struct {
-	Type string `json:"type"`
-	KeyValueConf
+	Type         string `json:"type" yaml:"type"`
+	KeyValueConf `json:"metadata" yaml:"metadata"`
 }
