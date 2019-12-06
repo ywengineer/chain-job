@@ -1,14 +1,40 @@
 package job
 
+import (
+	jsoniter "github.com/json-iterator/go"
+	"github.com/ywengineer/g-util/util"
+	"gopkg.in/yaml.v2"
+)
+
 type KeyValueConf struct {
-	Metadata map[string]interface{} `json:"metadata"`
+	Metadata map[string]interface{} `json:"metadata" yaml:"metadata"`
 }
 
 type TaskConf struct {
-	Source  SourceConf   `json:"source"`
-	Filters []FilterConf `json:"filters"`
-	Sink    SinkConf     `json:"sink"`
-	Threads int          `json:"threads"`
+	Source  SourceConf   `json:"source" yaml:"source"`
+	Filters []FilterConf `json:"filters"  yaml:"filters"`
+	Sink    SinkConf     `json:"sink" yaml:"sink"`
+	Threads int          `json:"threads" yaml:"threads"`
+}
+
+func ParseConfFromYaml(data []byte) *TaskConf {
+	t := new(TaskConf)
+	if e := yaml.Unmarshal(data, t); e == nil {
+		return t
+	} else {
+		util.Panic("parse task conf from yaml failed. %v", e)
+	}
+	return nil
+}
+
+func ParseConfFromJson(data []byte) *TaskConf {
+	t := new(TaskConf)
+	if e := jsoniter.Unmarshal(data, t); e == nil {
+		return t
+	} else {
+		util.Panic("parse task conf from json failed. %v", e)
+	}
+	return nil
 }
 
 func (src *KeyValueConf) GetString(key string) string {
