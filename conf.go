@@ -6,9 +6,7 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type KeyValueConf struct {
-	Metadata map[string]interface{} `json:"metadata" yaml:"metadata"`
-}
+type KeyValueConf map[string]interface{}
 
 type TaskConf struct {
 	Source  SourceConf   `json:"source" yaml:"source"`
@@ -38,14 +36,14 @@ func ParseConfFromJson(data []byte) *[]TaskConf {
 }
 
 func (src *KeyValueConf) GetString(key string) string {
-	if v, ok := src.Metadata[key]; ok {
+	if v, ok := (*src)[key]; ok {
 		return v.(string)
 	}
 	return ""
 }
 
 func (src *KeyValueConf) GetBool(key string) bool {
-	if v, ok := src.Metadata[key]; ok {
+	if v, ok := (*src)[key]; ok {
 		return v.(bool)
 	}
 	return false
@@ -56,7 +54,7 @@ func (src *KeyValueConf) GetInt(key string) int {
 }
 
 func (src *KeyValueConf) GetInt64(key string) int64 {
-	if v, ok := src.Metadata[key]; ok {
+	if v, ok := (*src)[key]; ok {
 		switch v.(type) {
 		case int:
 			return int64(v.(int))
@@ -74,7 +72,7 @@ func (src *KeyValueConf) GetInt64(key string) int64 {
 }
 
 func (src *KeyValueConf) GetUInt64(key string) uint64 {
-	if v, ok := src.Metadata[key]; ok {
+	if v, ok := (*src)[key]; ok {
 		switch v.(type) {
 		case int:
 			return uint64(v.(int))
