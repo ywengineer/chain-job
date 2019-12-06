@@ -17,8 +17,8 @@ type TaskConf struct {
 	Threads int          `json:"threads" yaml:"threads"`
 }
 
-func ParseConfFromYaml(data []byte) *TaskConf {
-	t := new(TaskConf)
+func ParseConfFromYaml(data []byte) *[]TaskConf {
+	t := new([]TaskConf)
 	if e := yaml.Unmarshal(data, t); e == nil {
 		return t
 	} else {
@@ -27,8 +27,8 @@ func ParseConfFromYaml(data []byte) *TaskConf {
 	return nil
 }
 
-func ParseConfFromJson(data []byte) *TaskConf {
-	t := new(TaskConf)
+func ParseConfFromJson(data []byte) *[]TaskConf {
+	t := new([]TaskConf)
 	if e := jsoniter.Unmarshal(data, t); e == nil {
 		return t
 	} else {
