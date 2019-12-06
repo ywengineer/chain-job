@@ -91,7 +91,9 @@ func (sm *SinkMySQL) sink(data interface{}, sqlStr string, message *TaskData) {
 		slice := data.([]map[string]interface{})
 		tx := sm.mysql.GetConn().MustBegin()
 		for _, m := range slice {
-			_, _ = tx.NamedExec(sqlStr, m)
+			if _, e := tx.NamedExec(sqlStr, m); e != nil {
+				sm.log.Error("bind sql param failed", zap.String("tag", "SinkMySQL"), zap.Error(e))
+			}
 		}
 		if e := tx.Commit(); e != nil {
 			_ = tx.Rollback()
