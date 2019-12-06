@@ -73,16 +73,22 @@ func (sm *SinkMySQL) DoSink(message *TaskData) {
 		return
 	}
 	//
-	sqlStr, ok := "", false
-	if sqlStr, ok = sm.sqlMap[tp]; !ok {
+	if sqlStr, ok := sm.sqlMap[tp]; !ok {
 		sm.log.Error("missing sql", zap.String("tag", "SinkMySQL"), zap.String("key", tp), zap.Any("data", *message))
-		return
+	} else {
+		//
+		sm.sink(message.Payload, sqlStr, message)
 	}
+}
+
+func (sm *SinkMySQL) sink(data interface{}, sqlStr string, message *TaskData) {
 	//
-	kind := reflect.TypeOf(message.Payload).Kind()
+	kind := reflect.TypeOf(data).Kind()
 	switch kind {
+	case reflect.Ptr:
+		sm.sink(reflect.ValueOf(data).Elem().Interface(), sqlStr, message)
 	case reflect.Slice:
-		slice := message.Payload.([]map[string]interface{})
+		slice := data.([]map[string]interface{})
 		tx := sm.mysql.GetConn().MustBegin()
 		for _, m := range slice {
 			_, _ = tx.NamedExec(sqlStr, m)
@@ -92,7 +98,7 @@ func (sm *SinkMySQL) DoSink(message *TaskData) {
 			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", *message))
 		}
 	case reflect.Map:
-		if _, e := sm.mysql.GetConn().NamedExec(sqlStr, message.Payload.(map[string]interface{})); e != nil {
+		if _, e := sm.mysql.GetConn().NamedExec(sqlStr, data.(map[string]interface{})); e != nil {
 			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", *message))
 		}
 	default:
