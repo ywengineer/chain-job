@@ -50,7 +50,6 @@ func newKafkaConsumer(ctx context.Context, log *zap.Logger,
 	 */
 	consumer := &kConsumer{
 		ready: make(chan bool),
-		stop:  make(chan bool),
 		log:   log,
 	}
 
