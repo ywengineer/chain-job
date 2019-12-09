@@ -30,6 +30,7 @@ type Task struct {
 func (task *Task) addFilter(filter Filter) {
 	task.filters = append(task.filters, filter)
 }
+
 func (task *Task) Run() {
 	task.runState.Do(task._Run)
 }
@@ -50,7 +51,7 @@ func (task *Task) _Run() {
 	}
 	//
 	wg.Wait()
-	task.log.Info("task finished.", zap.Any("config", *task.conf))
+	task.log.Info("task finished.", zap.Any("desc", task.conf.Desc))
 	close(task.stopChan)
 }
 

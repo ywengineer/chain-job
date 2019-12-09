@@ -9,6 +9,7 @@ import (
 type KeyValueConf map[string]interface{}
 
 type TaskConf struct {
+	Desc    string       `json:"desc" yaml:"desc"`
 	Source  SourceConf   `json:"source" yaml:"source"`
 	Filters []FilterConf `json:"filters"  yaml:"filters"`
 	Sink    SinkConf     `json:"sink" yaml:"sink"`
