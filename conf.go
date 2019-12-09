@@ -43,6 +43,13 @@ func (src *KeyValueConf) GetString(key string) string {
 	return ""
 }
 
+func (src *KeyValueConf) GetStringOrDefault(key, def string) string {
+	if v, ok := (*src)[key]; ok {
+		return v.(string)
+	}
+	return def
+}
+
 func (src *KeyValueConf) GetBool(key string) bool {
 	if v, ok := (*src)[key]; ok {
 		return v.(bool)
