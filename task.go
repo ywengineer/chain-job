@@ -13,7 +13,7 @@ type TaskData struct {
 }
 
 type Task struct {
-	conf       *TaskConf
+	conf       TaskConf
 	log        *zap.Logger
 	ctx        context.Context
 	stop       context.CancelFunc
@@ -83,7 +83,7 @@ func (task *Task) Stop() <-chan bool {
 	return task.stopChan
 }
 
-func NewTask(conf *TaskConf, parentCtx context.Context, log *zap.Logger) *Task {
+func NewTask(conf TaskConf, parentCtx context.Context, log *zap.Logger) *Task {
 	ctx, cancel := context.WithCancel(parentCtx)
 	task := &Task{
 		conf:       conf,
