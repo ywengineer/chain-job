@@ -38,6 +38,7 @@ func (task *Task) Run() {
 func (task *Task) _Run() {
 	task.terminated = false
 	task.conf.Threads = util.MaxInt(task.conf.Threads, 1)
+	task.log.Info("task started.", zap.Any("desc", task.conf.Desc), zap.Int("thread", task.conf.Threads))
 	//
 	wg := sync.WaitGroup{}
 	wg.Add(task.conf.Threads)
