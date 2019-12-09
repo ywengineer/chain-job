@@ -14,7 +14,6 @@ type TaskData struct {
 
 type Task struct {
 	conf       *TaskConf
-	mtx        sync.Mutex
 	log        *zap.Logger
 	ctx        context.Context
 	stop       context.CancelFunc
@@ -24,18 +23,18 @@ type Task struct {
 	sink       Sink
 	filterSize int
 	stopChan   chan bool
+	runState   sync.Once
+	stopMu     sync.Mutex
 }
 
 func (task *Task) addFilter(filter Filter) {
 	task.filters = append(task.filters, filter)
 }
-
 func (task *Task) Run() {
-	task.mtx.Lock()
-	defer task.mtx.Unlock()
-	if !task.terminated {
-		return
-	}
+	task.runState.Do(task._Run)
+}
+
+func (task *Task) _Run() {
 	task.terminated = false
 	task.conf.Threads = util.MaxInt(task.conf.Threads, 1)
 	//
@@ -74,8 +73,8 @@ func (task *Task) run() {
 }
 
 func (task *Task) Stop() <-chan bool {
-	task.mtx.Lock()
-	defer task.mtx.Unlock()
+	task.stopMu.Lock()
+	defer task.stopMu.Unlock()
 	if !task.terminated {
 		task.terminated = true
 		task.stop()
