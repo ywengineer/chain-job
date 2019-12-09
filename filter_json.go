@@ -23,7 +23,7 @@ type JsonFilter struct {
 	log         *zap.Logger
 	conf        *FilterConf
 	genId       bool
-	fillMissing map[string]interface{}
+	fillMissing map[interface{}]interface{}
 }
 
 func (jf *JsonFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
@@ -31,7 +31,7 @@ func (jf *JsonFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logge
 	jf.conf = conf
 	jf.genId = conf.Metadata.GetBool("generateId")
 	if m, ok := conf.Metadata["fillMissing"]; ok {
-		jf.fillMissing = m.(map[string]interface{})
+		jf.fillMissing = m.(map[interface{}]interface{})
 	}
 	if jf.genId && gsf == nil {
 		log.Panic("generate id feature need global snowflake worker. please ensure invoke method SetGlobalSnowflakeInfo")
@@ -48,8 +48,9 @@ func (jf *JsonFilter) check(p *map[string]interface{}) {
 	}
 	if len(jf.fillMissing) > 0 {
 		for k, v := range jf.fillMissing {
-			if _, ok := (*p)[k]; !ok {
-				(*p)[k] = v
+			ks := k.(string)
+			if _, ok := (*p)[ks]; !ok {
+				(*p)[ks] = v
 			}
 		}
 	}
@@ -80,7 +81,7 @@ type JsonArrayFilter struct {
 	log         *zap.Logger
 	conf        *FilterConf
 	genId       bool
-	fillMissing map[string]interface{}
+	fillMissing map[interface{}]interface{}
 }
 
 func (jaf *JsonArrayFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
@@ -88,7 +89,7 @@ func (jaf *JsonArrayFilter) init(conf *FilterConf, ctx context.Context, log *zap
 	jaf.conf = conf
 	jaf.genId = conf.Metadata.GetBool("generateId")
 	if m, ok := conf.Metadata["fillMissing"]; ok {
-		jaf.fillMissing = m.(map[string]interface{})
+		jaf.fillMissing = m.(map[interface{}]interface{})
 	}
 	if jaf.genId && gsf == nil {
 		log.Panic("generate id feature need global snowflake worker. please ensure invoke method SetGlobalSnowflakeInfo")
@@ -134,8 +135,9 @@ func (jaf *JsonArrayFilter) check(p *map[string]interface{}) {
 	}
 	if len(jaf.fillMissing) > 0 {
 		for k, v := range jaf.fillMissing {
-			if _, ok := (*p)[k]; !ok {
-				(*p)[k] = v
+			ks := k.(string)
+			if _, ok := (*p)[ks]; !ok {
+				(*p)[ks] = v
 			}
 		}
 	}
