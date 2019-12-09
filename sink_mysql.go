@@ -34,7 +34,7 @@ type SinkMySQL struct {
 	conf      *SinkConf
 	log       *zap.Logger
 	mysql     *sql.MySQL
-	sqlMap    map[string]string
+	sqlMap    map[interface{}]interface{}
 	sqlMapKey string
 }
 
@@ -42,7 +42,7 @@ func (sm *SinkMySQL) init(conf *SinkConf, ctx context.Context, log *zap.Logger) 
 	sm.conf = conf
 	sm.log = log
 	if sc, ok := conf.Metadata["sql"]; ok {
-		sm.sqlMap = sc.(map[string]string)
+		sm.sqlMap = sc.(map[interface{}]interface{})
 	} else {
 		log.Panic("missing sql config for SinkMySQL")
 	}
@@ -74,7 +74,7 @@ func (sm *SinkMySQL) DoSink(message *TaskData) {
 		sm.log.Error("missing sql", zap.String("tag", "SinkMySQL"), zap.String("key", tp), zap.Any("data", *message))
 	} else {
 		//
-		sm.sink(message.Payload, sqlStr, message)
+		sm.sink(message.Payload, sqlStr.(string), message)
 	}
 }
 
