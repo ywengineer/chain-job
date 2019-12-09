@@ -48,26 +48,26 @@ func (sm *SinkMySQL) init(conf *SinkConf, ctx context.Context, log *zap.Logger) 
 	} else {
 		log.Panic("missing sql config for SinkMySQL")
 	}
-	sqlMapKey := conf.GetString("sqlMapKey")
+	sqlMapKey := conf.Metadata.GetString("sqlMapKey")
 	if len(sqlMapKey) == 0 {
 		log.Panic("messing sqlMapKey config for SinkMySQL")
 	}
 	sm.sqlMapKey = sqlMapKey
 	//
-	if conf.GetBool("global") {
+	if conf.Metadata.GetBool("global") {
 		if mysql == nil {
 			log.Panic("global mysql client not set.")
 		} else {
 			sm.mysql = mysql
 		}
 	} else {
-		sm.mysql = newMySQLClient(conf.KeyValueConf, log)
+		sm.mysql = newMySQLClient(conf.Metadata, log)
 	}
 	util.Watch(ctx, sm.stop)
 }
 
 func (sm *SinkMySQL) DoSink(message *TaskData) {
-	tp := message.GetString(sm.sqlMapKey)
+	tp := message.Metadata.GetString(sm.sqlMapKey)
 	if len(tp) == 0 {
 		sm.log.Error("missing sql map key meta", zap.String("tag", "SinkMySQL"), zap.String("sqkMapKey", sm.sqlMapKey), zap.Any("data", *message))
 		return

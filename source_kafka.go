@@ -149,12 +149,12 @@ func (kafka *KafkaSource) init(conf *SourceConf, ctx context.Context, log *zap.L
 	kafka.log = log
 	kafka.conf = conf
 	kafka.consumer = newKafkaConsumer(ctx, log,
-		conf.GetString("brokers"),
-		conf.GetString("topics"),
-		conf.GetString("group"),
-		conf.GetBool("verbose"),
-		conf.GetBool("oldest"),
-		conf.GetString("version"),
+		conf.Metadata.GetString("brokers"),
+		conf.Metadata.GetString("topics"),
+		conf.Metadata.GetString("group"),
+		conf.Metadata.GetBool("verbose"),
+		conf.Metadata.GetBool("oldest"),
+		conf.Metadata.GetString("version"),
 	)
 	util.Watch(ctx, kafka.consumer.stop)
 }

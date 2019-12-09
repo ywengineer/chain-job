@@ -39,7 +39,7 @@ func (sif *SnowflakeIDFilter) init(conf *FilterConf, ctx context.Context, log *z
 	sif.log = log
 	sif.conf = conf
 	// 如果是全局
-	if conf.GetBool("global") {
+	if conf.Metadata.GetBool("global") {
 		if gsf == nil {
 			log.Panic("global snowflake filter not set.")
 		} else {
@@ -47,7 +47,7 @@ func (sif *SnowflakeIDFilter) init(conf *FilterConf, ctx context.Context, log *z
 		}
 	} else {
 		//
-		if worker, err := pro.NewWorker(conf.GetUInt64("center"), conf.GetUInt64("machine")); err != nil {
+		if worker, err := pro.NewWorker(conf.Metadata.GetUInt64("center"), conf.Metadata.GetUInt64("machine")); err != nil {
 			log.Panic("init snowflake uid filter failed.", zap.Error(err))
 		} else {
 			sif.worker = worker

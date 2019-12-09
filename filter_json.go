@@ -29,7 +29,7 @@ type JsonFilter struct {
 func (jf *JsonFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
 	jf.log = log
 	jf.conf = conf
-	jf.genId = conf.GetBool("generateId")
+	jf.genId = conf.Metadata.GetBool("generateId")
 	if m, ok := conf.Metadata["fillMissing"]; ok {
 		jf.fillMissing = m.(map[string]interface{})
 	}
@@ -86,7 +86,7 @@ type JsonArrayFilter struct {
 func (jaf *JsonArrayFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
 	jaf.log = log
 	jaf.conf = conf
-	jaf.genId = conf.GetBool("generateId")
+	jaf.genId = conf.Metadata.GetBool("generateId")
 	if m, ok := conf.Metadata["fillMissing"]; ok {
 		jaf.fillMissing = m.(map[string]interface{})
 	}

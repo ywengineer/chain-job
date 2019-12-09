@@ -8,8 +8,8 @@ import (
 )
 
 type TaskData struct {
-	Payload interface{}
-	KeyValueConf
+	Payload  interface{}
+	Metadata KeyValueConf
 }
 
 type task struct {
