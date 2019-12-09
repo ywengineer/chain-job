@@ -29,5 +29,4 @@ func newSink(conf *SinkConf, ctx context.Context, log *zap.Logger) Sink {
 
 type Sink interface {
 	DoSink(message *TaskData)
-	Terminated() <-chan bool
 }

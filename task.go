@@ -51,9 +51,6 @@ func (task *task) Run() {
 	}
 	//
 	wg.Wait()
-	//
-	<-task.source.Terminated()
-	<-task.sink.Terminated()
 	task.log.Info("task finished.", zap.Any("config", *task.conf))
 	close(task.stopChan)
 }

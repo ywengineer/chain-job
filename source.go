@@ -29,5 +29,4 @@ func newSource(conf *SourceConf, ctx context.Context, log *zap.Logger) Source {
 
 type Source interface {
 	Read() <-chan *TaskData
-	Terminated() <-chan bool
 }

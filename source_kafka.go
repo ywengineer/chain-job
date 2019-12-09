@@ -3,7 +3,6 @@ package job
 import (
 	"context"
 	"github.com/Shopify/sarama"
-	"github.com/ywengineer/g-util/util"
 	"go.uber.org/zap"
 	logf "log"
 	"os"
@@ -90,7 +89,6 @@ func newKafkaConsumer(ctx context.Context, log *zap.Logger,
 // Consumer represents a Sarama consumer group consumer
 type kConsumer struct {
 	ready chan bool
-	stop  chan bool
 	mc    chan *TaskData
 	log   *zap.Logger
 }
@@ -156,13 +154,8 @@ func (kafka *KafkaSource) init(conf *SourceConf, ctx context.Context, log *zap.L
 		conf.Metadata.GetBool("oldest"),
 		conf.Metadata.GetString("version"),
 	)
-	util.Watch(ctx, kafka.consumer.stop)
 }
 
 func (kafka *KafkaSource) Read() <-chan *TaskData {
 	return kafka.consumer.mc
-}
-
-func (kafka *KafkaSource) Terminated() <-chan bool {
-	return kafka.consumer.stop
 }

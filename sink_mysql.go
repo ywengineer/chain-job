@@ -33,7 +33,6 @@ func SetGlobalMySQL(conf KeyValueConf, log *zap.Logger) {
 type SinkMySQL struct {
 	conf      *SinkConf
 	log       *zap.Logger
-	stop      chan bool
 	mysql     *sql.MySQL
 	sqlMap    map[string]string
 	sqlMapKey string
@@ -42,7 +41,6 @@ type SinkMySQL struct {
 func (sm *SinkMySQL) init(conf *SinkConf, ctx context.Context, log *zap.Logger) {
 	sm.conf = conf
 	sm.log = log
-	sm.stop = make(chan bool)
 	if sc, ok := conf.Metadata["sql"]; ok {
 		sm.sqlMap = sc.(map[string]string)
 	} else {
@@ -63,7 +61,6 @@ func (sm *SinkMySQL) init(conf *SinkConf, ctx context.Context, log *zap.Logger) 
 	} else {
 		sm.mysql = newMySQLClient(conf.Metadata, log)
 	}
-	util.Watch(ctx, sm.stop)
 }
 
 func (sm *SinkMySQL) DoSink(message *TaskData) {
@@ -106,10 +103,6 @@ func (sm *SinkMySQL) sink(data interface{}, sqlStr string, message *TaskData) {
 	default:
 		sm.log.Error("unknown message kind for sink mysql", zap.Any("kind", kind.String()))
 	}
-}
-
-func (sm *SinkMySQL) Terminated() <-chan bool {
-	return sm.stop
 }
 
 func newMySQLClient(conf KeyValueConf, log *zap.Logger) *sql.MySQL {
