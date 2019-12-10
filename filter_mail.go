@@ -21,6 +21,7 @@ type MailFilter struct {
 	conf      *FilterConf
 	cond      string
 	condValue string
+	mc        *util.MailClient
 }
 
 func (mf *MailFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
@@ -33,6 +34,14 @@ func (mf *MailFilter) init(conf *FilterConf, ctx context.Context, log *zap.Logge
 	}
 	if len(mf.condValue) == 0 {
 		log.Panic("missing metadata condProp of MailFilter")
+	}
+	if mc, e := util.NewMailSender(mf.conf.Metadata.GetString("host"),
+		mf.conf.Metadata.GetInt("port"),
+		mf.conf.Metadata.GetString("username"),
+		mf.conf.Metadata.GetString("password")); e != nil {
+		log.Panic("create mail client failed for mail filter.", zap.Any("info", conf.Metadata))
+	} else {
+		mf.mc = mc
 	}
 }
 
@@ -59,11 +68,7 @@ func (mf *MailFilter) matchCond(value interface{}) bool {
 func (mf *MailFilter) sendMail(data map[string]interface{}) {
 	//host string, port int, username, password string, from, to, cc, bcc string, subject, bodyType, bodyString string
 	if d, e := jsoniter.MarshalToString(data); e == nil {
-		go util.DirectSendMail(
-			mf.conf.Metadata.GetString("host"),
-			mf.conf.Metadata.GetInt("port"),
-			mf.conf.Metadata.GetString("username"),
-			mf.conf.Metadata.GetString("password"),
+		go mf.mc.SendMail(
 			mf.conf.Metadata.GetString("from"),
 			mf.conf.Metadata.GetString("to"),
 			mf.conf.Metadata.GetString("cc"),
