@@ -97,12 +97,11 @@ func NewTask(conf TaskConf, parentCtx context.Context, log *zap.Logger) *Task {
 		sink:       newSink(&conf.Sink, ctx, log),
 	}
 	for _, value := range conf.Filters {
-		func(fc *FilterConf) {
-			if f := newFilter(fc, ctx, log); f != nil {
-				task.addFilter(f)
-				task.filterSize += 1
-			}
-		}(&value)
+		fc := &value
+		if f := newFilter(fc, ctx, log); f != nil {
+			task.addFilter(f)
+			task.filterSize += 1
+		}
 	}
 	return task
 }
