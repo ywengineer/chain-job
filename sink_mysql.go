@@ -89,16 +89,16 @@ func (sm *SinkMySQL) sink(data interface{}, sqlStr string, message *TaskData) {
 		tx := sm.mysql.GetConn().MustBegin()
 		for _, m := range slice {
 			if _, e := tx.NamedExec(sqlStr, m); e != nil {
-				sm.log.Error("bind sql param failed", zap.String("tag", "SinkMySQL"), zap.Error(e))
+				sm.log.Error("bind sql param failed", zap.String("tag", "SinkMySQL"), zap.Any("data", m), zap.Error(e))
 			}
 		}
 		if e := tx.Commit(); e != nil {
 			_ = tx.Rollback()
-			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", *message))
+			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", message))
 		}
 	case reflect.Map:
 		if _, e := sm.mysql.GetConn().NamedExec(sqlStr, data.(map[string]interface{})); e != nil {
-			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", *message))
+			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", message))
 		}
 	default:
 		sm.log.Error("unknown message kind for sink mysql", zap.Any("kind", kind.String()))

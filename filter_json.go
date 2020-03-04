@@ -6,6 +6,8 @@ import (
 	"go.uber.org/zap"
 )
 
+var jsonApi = jsoniter.Config{UseNumber: true, EscapeHTML: true}.Froze()
+
 func init() {
 	RegisterFilter("json", func(conf *FilterConf, ctx context.Context, log *zap.Logger) Filter {
 		f := &JsonFilter{}
@@ -60,7 +62,7 @@ func (jf *JsonFilter) DoFilter(message *TaskData) {
 	switch message.Payload.(type) {
 	case string:
 		p := new(map[string]interface{})
-		if e := jsoniter.UnmarshalFromString(message.Payload.(string), p); e == nil {
+		if e := jsonApi.UnmarshalFromString(message.Payload.(string), p); e == nil {
 			jf.check(p)
 			message.Payload = p
 		} else {
@@ -68,7 +70,7 @@ func (jf *JsonFilter) DoFilter(message *TaskData) {
 		}
 	case []byte:
 		p := new(map[string]interface{})
-		if e := jsoniter.Unmarshal(message.Payload.([]byte), p); e == nil {
+		if e := jsonApi.Unmarshal(message.Payload.([]byte), p); e == nil {
 			jf.check(p)
 			message.Payload = p
 		} else {
@@ -100,7 +102,7 @@ func (jaf *JsonArrayFilter) DoFilter(message *TaskData) {
 	switch message.Payload.(type) {
 	case string:
 		p := new([]map[string]interface{})
-		if e := jsoniter.UnmarshalFromString(message.Payload.(string), p); e == nil {
+		if e := jsonApi.UnmarshalFromString(message.Payload.(string), p); e == nil {
 			if jaf.genId || len(jaf.fillMissing) > 0 {
 				for _, v := range *p {
 					jaf.check(&v)
@@ -112,7 +114,7 @@ func (jaf *JsonArrayFilter) DoFilter(message *TaskData) {
 		}
 	case []byte:
 		p := new([]map[string]interface{})
-		if e := jsoniter.Unmarshal(message.Payload.([]byte), p); e == nil {
+		if e := jsonApi.Unmarshal(message.Payload.([]byte), p); e == nil {
 			if jaf.genId || len(jaf.fillMissing) > 0 {
 				for _, v := range *p {
 					jaf.check(&v)
