@@ -10,7 +10,7 @@ import (
 
 func init() {
 	RegisterFilter("mail", func(conf *FilterConf, ctx context.Context, log *zap.Logger) Filter {
-		f := &SnowflakeIDFilter{}
+		f := &MailFilter{}
 		f.init(conf, ctx, log)
 		return f
 	})
