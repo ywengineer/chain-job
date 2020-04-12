@@ -103,9 +103,9 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 		for _, item := range slice {
 			if id, ok := item["id"]; ok {
 				docID := strconv.FormatUint(id.(uint64), 10)
-				buf.AppendString(`{"index" : { "_index" : "` + indices + `", "_type" : "_doc", "_id" : "` + docID + `" }}`)
+				buf.AppendString(`{"index" : { "_index" : "` + indices + `", "_id" : "` + docID + `" }}`)
 			} else {
-				buf.AppendString(`{"index" : { "_index" : "` + indices + `", "_type" : "_doc" }}`)
+				buf.AppendString(`{"index" : { "_index" : "` + indices + `" }}`)
 			}
 			itemJsonString, _ := jsonApi.MarshalToString(item)
 			buf.AppendString(itemJsonString)
