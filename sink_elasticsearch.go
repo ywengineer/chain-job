@@ -128,7 +128,8 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 				zap.Any("data", message),
 				zap.String("info", res.String()),
 				zap.String("body", buf.String()))
-		} else {
+		}
+		if res != nil {
 			_ = res.Body.Close()
 		}
 	case reflect.Map:
@@ -147,7 +148,8 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 			//
 			if e != nil || res.IsError() {
 				sm.log.Error("execute insert failed", zap.String("tag", "SinkES"), zap.String("indices", indices), zap.Any("data", message))
-			} else {
+			}
+			if res != nil {
 				_ = res.Body.Close()
 			}
 		}
