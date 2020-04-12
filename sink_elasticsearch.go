@@ -103,11 +103,12 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 		for _, item := range slice {
 			if id, ok := item["id"]; ok {
 				docID := strconv.FormatUint(id.(uint64), 10)
-				buf.AppendString(`{"index" : { "_index" : "` + indices + `", "_id" : "` + docID + `" }}\n`)
+				buf.AppendString(`{"index" : { "_index" : "` + indices + `", "_id" : "` + docID + `" }}`)
 			} else {
-				buf.AppendString(`{"index" : { "_index" : "` + indices + `" }}\n`)
+				buf.AppendString(`{"index" : { "_index" : "` + indices + `" }}`)
 			}
 			itemJsonString, _ := jsonApi.MarshalToString(item)
+			buf.AppendString("\n")
 			buf.AppendString(itemJsonString)
 			buf.AppendString("\n")
 		}
