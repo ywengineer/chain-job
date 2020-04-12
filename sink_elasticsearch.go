@@ -125,7 +125,12 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 		)
 		//
 		if err != nil || res.IsError() {
-			sm.log.Error("execute insert failed", zap.String("tag", "SinkES"), zap.String("indices", indices), zap.Any("data", message))
+			sm.log.Error("execute insert failed",
+				zap.String("tag", "SinkES"),
+				zap.Error(err),
+				zap.String("indices", indices),
+				zap.Any("data", message),
+				zap.String("info", res.String()))
 		} else {
 			_ = res.Body.Close()
 		}
