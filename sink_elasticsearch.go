@@ -100,9 +100,7 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 		buf := bufPool.Get()
 		defer buf.Free()
 		//
-		lastIx := len(slice) - 1
-		//
-		for ix, item := range slice {
+		for _, item := range slice {
 			if id, ok := item["id"]; ok {
 				docID := strconv.FormatUint(id.(uint64), 10)
 				buf.AppendString(`{"index" : { "_index" : "` + indices + `", "_id" : "` + docID + `" }}\n`)
@@ -111,10 +109,7 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 			}
 			itemJsonString, _ := jsonApi.MarshalToString(item)
 			buf.AppendString(itemJsonString)
-			// append \n until last
-			if ix != lastIx {
-				buf.AppendString("\n")
-			}
+			buf.AppendString("\n")
 		}
 		//
 		bulk := sm._es.Bulk
