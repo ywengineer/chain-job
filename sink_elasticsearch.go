@@ -125,7 +125,8 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 				zap.Error(err),
 				zap.String("indices", indices),
 				zap.Any("data", message),
-				zap.String("info", res.String()))
+				zap.String("info", res.String()),
+				zap.String("body", buf.String()))
 		} else {
 			_ = res.Body.Close()
 		}
