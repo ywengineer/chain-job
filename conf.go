@@ -79,6 +79,18 @@ func (src *KeyValueConf) GetInt64(key string) int64 {
 	return 0
 }
 
+func (src *KeyValueConf) GetStringSlice(key string) []string {
+	if v, ok := (*src)[key]; ok {
+		return v.([]string)
+	}
+	return nil
+}
+
+func (src *KeyValueConf) Contains(key string) bool {
+	_, ok := (*src)[key]
+	return ok
+}
+
 func (src *KeyValueConf) GetUInt64(key string) uint64 {
 	if v, ok := (*src)[key]; ok {
 		switch v.(type) {
