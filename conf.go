@@ -81,7 +81,14 @@ func (src *KeyValueConf) GetInt64(key string) int64 {
 
 func (src *KeyValueConf) GetStringSlice(key string) []string {
 	if v, ok := (*src)[key]; ok {
-		return v.([]string)
+		if r, ok := v.([]string); ok {
+			return r
+		} else {
+			rc := make([]string, len(r))
+			for i, s := range v.([]interface{}) {
+				rc[i] = s.(string)
+			}
+		}
 	}
 	return nil
 }
