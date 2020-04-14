@@ -77,15 +77,15 @@ func (sm *FilterESAnalyzer) init(conf *FilterConf, ctx context.Context, log *zap
 
 func (sm *FilterESAnalyzer) DoFilter(message *TaskData) {
 	//
-	sm.sink(message.Payload, message)
+	sm.filter(message.Payload, message)
 }
 
-func (sm *FilterESAnalyzer) sink(data interface{}, message *TaskData) {
+func (sm *FilterESAnalyzer) filter(data interface{}, message *TaskData) {
 	//
 	kind := reflect.TypeOf(data).Kind()
 	switch kind {
 	case reflect.Ptr:
-		sm.sink(reflect.ValueOf(data).Elem().Interface(), message)
+		sm.filter(reflect.ValueOf(data).Elem().Interface(), message)
 	case reflect.Slice:
 		slice := data.([]map[string]interface{})
 		//
@@ -118,13 +118,14 @@ func (sm *FilterESAnalyzer) sink(data interface{}, message *TaskData) {
 }
 
 func (sm *FilterESAnalyzer) extract(data map[string]interface{}) string {
-	txt := ""
+	buf := reqBodyBufPool.Get()
+	defer buf.Free()
 	for _, prop := range sm.props {
 		if v, ok := data[prop]; ok {
-			txt += v.(string)
+			buf.AppendString(v.(string))
 		}
 	}
-	return txt
+	return buf.String()
 }
 
 func (sm *FilterESAnalyzer) extractTime(data map[string]interface{}) string {
@@ -163,10 +164,16 @@ func (sm *FilterESAnalyzer) _notify(words []string, time string) {
 }
 
 func (sm *FilterESAnalyzer) analysis(text string) []string {
+	body := map[string]interface{}{
+		"analyzer": sm.analyzer,
+		"text":     text,
+	}
+	text, _ = jsonApi.MarshalToString(body)
+	//
 	analyzer := sm._es.Indices.Analyze
 	res, err := analyzer(analyzer.WithIndex(sm.indices),
 		analyzer.WithContext(context.Background()),
-		analyzer.WithBody(strings.NewReader(`{"analyzer":"`+sm.analyzer+`","text":"`+text+`"}`)))
+		analyzer.WithBody(strings.NewReader(text)))
 	var words []string
 	//
 	if err != nil {
