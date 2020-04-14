@@ -17,19 +17,6 @@ func init() {
 	})
 }
 
-var mysql *sql.MySQL
-var mysqlMutex = sync.Mutex{}
-
-func SetGlobalMySQL(conf KeyValueConf, log *zap.Logger) {
-	mysqlMutex.Lock()
-	defer mysqlMutex.Unlock()
-	if mysql == nil {
-		mysql = newMySQLClient(conf, log)
-	} else {
-		util.Error("global mysql client already exists.", mysql.String())
-	}
-}
-
 type SinkMySQL struct {
 	conf      *SinkConf
 	log       *zap.Logger
@@ -103,10 +90,4 @@ func (sm *SinkMySQL) sink(data interface{}, sqlStr string, message *TaskData) {
 	default:
 		sm.log.Error("unknown message kind for sink mysql", zap.Any("kind", kind.String()))
 	}
-}
-
-func newMySQLClient(conf KeyValueConf, log *zap.Logger) *sql.MySQL {
-	return sql.NewMySQL(conf.GetString("user"), conf.GetString("password"), conf.GetString("host"), conf.GetString("db"),
-		conf.GetString("loc"), conf.GetInt("port"), conf.GetInt("writeTimeout"), conf.GetInt("readTimeout"), conf.GetInt("dialTimeout"),
-		conf.GetInt("maxOpenConn"), conf.GetInt("maxIdleConn"), log)
 }

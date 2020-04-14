@@ -4,13 +4,10 @@ import (
 	"context"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/ywengineer/g-util/es"
-	"github.com/ywengineer/g-util/util"
 	"go.uber.org/zap"
-	"go.uber.org/zap/buffer"
 	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 )
 
 func init() {
@@ -19,21 +16,6 @@ func init() {
 		s.init(conf, ctx, log)
 		return s
 	})
-}
-
-var _es *esapi.API
-var esMutex = sync.Mutex{}
-
-const ConfAddress = "address"
-
-func SetGlobalES(conf KeyValueConf, log *zap.Logger) {
-	esMutex.Lock()
-	defer esMutex.Unlock()
-	if _es == nil && conf.Contains(ConfAddress) {
-		_es = es.NewESClient(conf.GetStringSlice(ConfAddress), log)
-	} else {
-		util.Error("global elastic client already exists.", mysql.String())
-	}
 }
 
 type SinkES struct {
@@ -86,8 +68,6 @@ func (sm *SinkES) DoSink(message *TaskData) {
 	}
 }
 
-var bufPool = buffer.NewPool()
-
 func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 	//
 	kind := reflect.TypeOf(data).Kind()
@@ -97,7 +77,7 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 	case reflect.Slice:
 		slice := data.([]map[string]interface{})
 		//
-		buf := bufPool.Get()
+		buf := reqBodyBufPool.Get()
 		defer buf.Free()
 		//
 		for _, item := range slice {

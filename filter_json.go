@@ -2,11 +2,8 @@ package job
 
 import (
 	"context"
-	jsoniter "github.com/json-iterator/go"
 	"go.uber.org/zap"
 )
-
-var jsonApi = jsoniter.Config{UseNumber: true, EscapeHTML: true}.Froze()
 
 func init() {
 	RegisterFilter("json", func(conf *FilterConf, ctx context.Context, log *zap.Logger) Filter {
