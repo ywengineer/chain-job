@@ -153,6 +153,8 @@ func (sm *FilterESAnalyzer) _notify(words []string, time string) {
 		} else {
 			_ = res.Body.Close()
 		}
+	} else {
+		sm.log.Info("analyze result", sm.tag(), zap.Any("words", words), zap.String("time", time))
 	}
 }
 
