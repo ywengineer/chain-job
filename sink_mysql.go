@@ -3,10 +3,8 @@ package job
 import (
 	"context"
 	"github.com/ywengineer/g-util/sql"
-	"github.com/ywengineer/g-util/util"
 	"go.uber.org/zap"
 	"reflect"
-	"sync"
 )
 
 func init() {
