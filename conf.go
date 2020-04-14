@@ -84,10 +84,11 @@ func (src *KeyValueConf) GetStringSlice(key string) []string {
 		if r, ok := v.([]string); ok {
 			return r
 		} else {
-			rc := make([]string, len(r))
-			for i, s := range v.([]interface{}) {
-				rc[i] = s.(string)
+			rc := make([]string, 0)
+			for _, s := range v.([]interface{}) {
+				rc = append(rc, s.(string))
 			}
+			return rc
 		}
 	}
 	return nil
