@@ -136,6 +136,10 @@ func (sm *FilterESAnalyzer) extractTime(data map[string]interface{}) string {
 }
 
 func (sm *FilterESAnalyzer) _notify(words []string, time string) {
+	// no words need to notify
+	if len(words) <= 0 {
+		return
+	}
 	if len(sm.notify) > 0 {
 		body, _ := jsonApi.MarshalToString(words)
 		req, err := http.NewRequestWithContext(sm.ctx, "POST", sm.notify, strings.NewReader(`{"time":"`+time+`", "words":`+body+`}`))
