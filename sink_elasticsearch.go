@@ -54,14 +54,19 @@ func (sm *SinkES) init(conf *SinkConf, ctx context.Context, log *zap.Logger) {
 }
 
 func (sm *SinkES) DoSink(message *TaskData) {
+	defer func() {
+		if err := recover(); err != nil {
+			sm.log.Error("catch panic event.", sm.tag(), zap.Any("data", *message))
+		}
+	}()
 	tp := message.Metadata.GetString(sm.indicesKey)
 	if len(tp) == 0 {
-		sm.log.Error("missing indices key meta", zap.String("tag", "SinkES"), zap.String("indicesKey", sm.indicesKey), zap.Any("data", *message))
+		sm.log.Error("missing indices key meta", sm.tag(), zap.String("indicesKey", sm.indicesKey), zap.Any("data", *message))
 		return
 	}
 	//
 	if indices, ok := sm.indicesMap[tp]; !ok {
-		sm.log.Error("missing indices map", zap.String("tag", "SinkES"), zap.String("key", tp), zap.Any("data", *message))
+		sm.log.Error("missing indices map", sm.tag(), zap.String("key", tp), zap.Any("data", *message))
 	} else {
 		//
 		sm.sink(message.Payload, indices.(string), message)
@@ -102,7 +107,7 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 		//
 		if err != nil || res.IsError() {
 			sm.log.Error("execute insert failed",
-				zap.String("tag", "SinkES"),
+				sm.tag(),
 				zap.Error(err),
 				zap.String("indices", indices),
 				zap.Any("data", message),
@@ -114,7 +119,7 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 		}
 	case reflect.Map:
 		if json, e := jsonApi.MarshalToString(data); e != nil {
-			sm.log.Error("encode map to json failed.", zap.String("tag", "SinkES"), zap.String("indices", indices), zap.Any("data", message))
+			sm.log.Error("encode map to json failed.", sm.tag(), zap.String("indices", indices), zap.Any("data", message))
 		} else {
 			insert := sm._es.Index
 			//
@@ -127,13 +132,17 @@ func (sm *SinkES) sink(data interface{}, indices string, message *TaskData) {
 			}
 			//
 			if e != nil || res.IsError() {
-				sm.log.Error("execute insert failed", zap.String("tag", "SinkES"), zap.String("indices", indices), zap.Any("data", message))
+				sm.log.Error("execute insert failed", sm.tag(), zap.String("indices", indices), zap.Any("data", message))
 			}
 			if res != nil {
 				_ = res.Body.Close()
 			}
 		}
 	default:
-		sm.log.Error("unknown message kind for sink elastic", zap.Any("kind", kind.String()))
+		sm.log.Error("unknown message kind for sink elastic", sm.tag(), zap.Any("kind", kind.String()))
 	}
+}
+
+func (sm *SinkES) tag() zap.Field {
+	return zap.String("tag", "SinkES")
 }

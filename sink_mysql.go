@@ -49,14 +49,19 @@ func (sm *SinkMySQL) init(conf *SinkConf, ctx context.Context, log *zap.Logger) 
 }
 
 func (sm *SinkMySQL) DoSink(message *TaskData) {
+	defer func() {
+		if err := recover(); err != nil {
+			sm.log.Error("catch panic event.", sm.tag(), zap.Any("data", *message))
+		}
+	}()
 	tp := message.Metadata.GetString(sm.sqlMapKey)
 	if len(tp) == 0 {
-		sm.log.Error("missing sql map key meta", zap.String("tag", "SinkMySQL"), zap.String("sqkMapKey", sm.sqlMapKey), zap.Any("data", *message))
+		sm.log.Error("missing sql map key meta", sm.tag(), zap.String("sqkMapKey", sm.sqlMapKey), zap.Any("data", *message))
 		return
 	}
 	//
 	if sqlStr, ok := sm.sqlMap[tp]; !ok {
-		sm.log.Error("missing sql", zap.String("tag", "SinkMySQL"), zap.String("key", tp), zap.Any("data", *message))
+		sm.log.Error("missing sql", sm.tag(), zap.String("key", tp), zap.Any("data", *message))
 	} else {
 		//
 		sm.sink(message.Payload, sqlStr.(string), message)
@@ -74,18 +79,22 @@ func (sm *SinkMySQL) sink(data interface{}, sqlStr string, message *TaskData) {
 		tx := sm.mysql.GetConn().MustBegin()
 		for _, m := range slice {
 			if _, e := tx.NamedExec(sqlStr, m); e != nil {
-				sm.log.Error("bind sql param failed", zap.String("tag", "SinkMySQL"), zap.Any("data", m), zap.Error(e))
+				sm.log.Error("bind sql param failed", sm.tag(), zap.Any("data", m), zap.Error(e))
 			}
 		}
 		if e := tx.Commit(); e != nil {
 			_ = tx.Rollback()
-			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", message))
+			sm.log.Error("execute sql failed", sm.tag(), zap.String("sql", sqlStr), zap.Any("data", message))
 		}
 	case reflect.Map:
 		if _, e := sm.mysql.GetConn().NamedExec(sqlStr, data.(map[string]interface{})); e != nil {
-			sm.log.Error("execute sql failed", zap.String("tag", "SinkMySQL"), zap.String("sql", sqlStr), zap.Any("data", message))
+			sm.log.Error("execute sql failed", sm.tag(), zap.String("sql", sqlStr), zap.Any("data", message))
 		}
 	default:
-		sm.log.Error("unknown message kind for sink mysql", zap.Any("kind", kind.String()))
+		sm.log.Error("unknown message kind for sink mysql", sm.tag(), zap.Any("kind", kind.String()))
 	}
+}
+
+func (sm *SinkMySQL) tag() zap.Field {
+	return zap.String("tag", "SinkMySQL")
 }
