@@ -108,7 +108,7 @@ func (sm *SinkESUpdate) sink(data interface{}, indices string, message *TaskData
 						sm.log.Error("missing data for update", sm.tag(), zap.Any("data", item))
 					}
 				} else {
-					sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", item))
+					sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", item), zap.Error(e))
 				}
 			} else {
 				sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", item))
@@ -160,7 +160,7 @@ func (sm *SinkESUpdate) sink(data interface{}, indices string, message *TaskData
 					sm.log.Error("missing data for update", sm.tag(), zap.Any("data", src))
 				}
 			} else {
-				sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", src))
+				sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", src), zap.Error(e))
 			}
 		} else {
 			sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", src))
