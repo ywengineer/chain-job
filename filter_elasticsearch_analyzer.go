@@ -169,9 +169,9 @@ func (sm *FilterESAnalyzer) _notify(words []string, time string) {
 			bd := ""
 			if res != nil {
 				if bytes, e := ioutil.ReadAll(res.Body); e == nil {
-					bd = string(bytes)
+					bd = fmt.Sprintf("%d: %s", res.StatusCode, string(bytes))
 				} else {
-					bd = e.Error()
+					bd = fmt.Sprintf("%d: %s", res.StatusCode, e.Error())
 				}
 			}
 			sm.log.Error("notify error", sm.tag(), zap.Error(err), zap.Any("data", words), zap.String("body", bd))
