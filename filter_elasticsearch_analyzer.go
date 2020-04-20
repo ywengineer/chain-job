@@ -8,6 +8,7 @@ import (
 	"github.com/ywengineer/g-util/es"
 	"github.com/ywengineer/g-util/sql"
 	"go.uber.org/zap"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -165,8 +166,17 @@ func (sm *FilterESAnalyzer) _notify(words []string, time string) {
 		res, err := transport.RoundTrip(req)
 		//
 		if err != nil || res.StatusCode > 299 {
-			sm.log.Error("notify error", sm.tag(), zap.Error(err), zap.Any("data", words))
-		} else {
+			bd := ""
+			if res != nil {
+				if bytes, e := ioutil.ReadAll(res.Body); e == nil {
+					bd = string(bytes)
+				} else {
+					bd = e.Error()
+				}
+			}
+			sm.log.Error("notify error", sm.tag(), zap.Error(err), zap.Any("data", words), zap.String("body", bd))
+		}
+		if res != nil {
 			_ = res.Body.Close()
 		}
 	} else {
