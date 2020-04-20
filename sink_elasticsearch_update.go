@@ -4,9 +4,9 @@ import (
 	"context"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/ywengineer/g-util/es"
+	"github.com/ywengineer/g-util/util"
 	"go.uber.org/zap"
 	"reflect"
-	"strconv"
 	"strings"
 )
 
@@ -96,16 +96,19 @@ func (sm *SinkESUpdate) sink(data interface{}, indices string, message *TaskData
 		//
 		for _, item := range slice {
 			if id, ok := item["id"]; ok {
-				docID := strconv.FormatUint(id.(uint64), 10)
-				//
-				if doc := sm.parseData(item); len(doc) > 0 {
-					buf.AppendString(`{"update" : { "_index" : "` + indices + `", "_id" : "` + docID + `" }}`)
-					itemJsonString, _ := jsonApi.MarshalToString(doc)
-					buf.AppendString("\n")
-					buf.AppendString(`{"doc": ` + itemJsonString + `}`)
-					buf.AppendString("\n")
+				if docID, e := util.Int2String(id); e == nil {
+					//
+					if doc := sm.parseData(item); len(doc) > 0 {
+						buf.AppendString(`{"update" : { "_index" : "` + indices + `", "_id" : "` + docID + `" }}`)
+						itemJsonString, _ := jsonApi.MarshalToString(doc)
+						buf.AppendString("\n")
+						buf.AppendString(`{"doc": ` + itemJsonString + `}`)
+						buf.AppendString("\n")
+					} else {
+						sm.log.Error("missing data for update", sm.tag(), zap.Any("data", item))
+					}
 				} else {
-					sm.log.Error("missing data for update", sm.tag(), zap.Any("data", item))
+					sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", item))
 				}
 			} else {
 				sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", item))
@@ -137,24 +140,27 @@ func (sm *SinkESUpdate) sink(data interface{}, indices string, message *TaskData
 	case reflect.Map:
 		src := data.(map[string]interface{})
 		if id, ok := src["id"]; ok {
-			docID := strconv.FormatUint(id.(uint64), 10)
-			//
-			if doc := sm.parseData(src); len(doc) > 0 {
+			if docID, e := util.Int2String(id); e == nil {
 				//
-				json, _ := jsonApi.MarshalToString(doc)
-				//
-				update := sm._es.Update
-				//
-				res, e := update(indices, docID, strings.NewReader(`{"doc": `+json+`}`), update.WithContext(sm.ctx))
-				//
-				if e != nil || res.IsError() {
-					sm.log.Error("execute insert failed", sm.tag(), zap.String("indices", indices), zap.Any("data", message))
-				}
-				if res != nil {
-					_ = res.Body.Close()
+				if doc := sm.parseData(src); len(doc) > 0 {
+					//
+					json, _ := jsonApi.MarshalToString(doc)
+					//
+					update := sm._es.Update
+					//
+					res, e := update(indices, docID, strings.NewReader(`{"doc": `+json+`}`), update.WithContext(sm.ctx))
+					//
+					if e != nil || res.IsError() {
+						sm.log.Error("execute insert failed", sm.tag(), zap.String("indices", indices), zap.Any("data", message))
+					}
+					if res != nil {
+						_ = res.Body.Close()
+					}
+				} else {
+					sm.log.Error("missing data for update", sm.tag(), zap.Any("data", src))
 				}
 			} else {
-				sm.log.Error("missing data for update", sm.tag(), zap.Any("data", src))
+				sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", src))
 			}
 		} else {
 			sm.log.Error("missing unique id for update", sm.tag(), zap.Any("data", src))
