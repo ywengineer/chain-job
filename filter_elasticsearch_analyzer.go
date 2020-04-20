@@ -2,6 +2,7 @@ package job
 
 import (
 	"context"
+	"fmt"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	jsoniter "github.com/json-iterator/go"
 	"github.com/ywengineer/g-util/es"
@@ -31,9 +32,10 @@ type FilterESAnalyzer struct {
 	indices  string
 	analyzer string
 	//
-	timeKey string
-	props   []string
-	notify  string
+	timeKey    string
+	props      []string
+	notifyUrl  *url.URL
+	_notifyUrl string
 }
 
 func (sm *FilterESAnalyzer) init(conf *FilterConf, ctx context.Context, log *zap.Logger) {
@@ -41,10 +43,13 @@ func (sm *FilterESAnalyzer) init(conf *FilterConf, ctx context.Context, log *zap
 	sm.log = log
 	sm.ctx = ctx
 	sm.timeKey = conf.Metadata.GetString("timeKey")
-	sm.notify = conf.Metadata.GetString("notifyUrl")
-	if len(sm.notify) > 0 {
-		if _, err := url.ParseRequestURI(sm.notify); err != nil {
-			log.Fatal("parse notify url error", sm.tag(), zap.Error(err), zap.String("url", sm.notify))
+	nl := conf.Metadata.GetString("notifyUrl")
+	if len(nl) > 0 {
+		if u, err := url.Parse(nl); err != nil {
+			log.Fatal("parse notify url error", sm.tag(), zap.Error(err), zap.String("url", nl))
+		} else {
+			sm.notifyUrl = u
+			sm._notifyUrl = fmt.Sprintf("%s://%s%s", u.Scheme, u.Host, u.RequestURI())
 		}
 	}
 	//
@@ -141,12 +146,18 @@ func (sm *FilterESAnalyzer) _notify(words []string, time string) {
 	if len(words) <= 0 {
 		return
 	}
-	if len(sm.notify) > 0 {
+	if sm.notifyUrl != nil && len(sm._notifyUrl) > 0 {
 		body, _ := jsonApi.MarshalToString(words)
-		req, err := http.NewRequestWithContext(sm.ctx, "POST", sm.notify, strings.NewReader(`{"time":"`+time+`", "words":`+body+`}`))
+		req, err := http.NewRequestWithContext(sm.ctx, "POST", sm._notifyUrl, strings.NewReader(`{"time":"`+time+`", "words":`+body+`}`))
 		if err != nil {
 			sm.log.Error("create notify request error", sm.tag(), zap.Error(err))
 			return
+		}
+		//
+		if len(sm.notifyUrl.User.Username()) > 0 {
+			if p, set := sm.notifyUrl.User.Password(); set {
+				req.SetBasicAuth(sm.notifyUrl.User.Username(), p)
+			}
 		}
 		//
 		req.Header.Add("Content-Type", "application/json;charset=utf-8")
