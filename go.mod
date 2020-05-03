@@ -6,7 +6,7 @@ require (
 	github.com/Shopify/sarama v1.26.1
 	github.com/elastic/go-elasticsearch/v7 v7.5.1-0.20200409075911-14061b088525
 	github.com/json-iterator/go v1.1.9
-	github.com/ywengineer/g-util v0.0.0-20200503093707-1bf47fc6b347
+	github.com/ywengineer/g-util v0.0.0-20200503093932-59540bb2c593
 	github.com/ywengineer/snowflake-golang v0.3.1-0.20200412051904-4e96252abeab
 	go.uber.org/zap v1.13.0
 	gopkg.in/yaml.v2 v2.2.8
