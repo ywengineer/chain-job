@@ -61,7 +61,7 @@ func newKafkaConsumer(ctx context.Context, log *zap.Logger,
 	//
 	topicArray := strings.Split(topics, ",")
 	//
-	consumer.mc = make(chan *TaskData, len(topicArray))
+	consumer.mc = make(chan *TaskData)
 	//
 	go func() {
 		defer func() {

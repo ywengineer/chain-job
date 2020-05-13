@@ -20,8 +20,9 @@ type Task struct {
 	terminated bool
 	source     Source
 	filters    []Filter
-	sink       Sink
 	filterSize int
+	sinks      []Sink
+	sinkSize   int
 	stopChan   chan bool
 	runState   sync.Once
 	stopMu     sync.Mutex
@@ -29,6 +30,10 @@ type Task struct {
 
 func (task *Task) addFilter(filter Filter) {
 	task.filters = append(task.filters, filter)
+}
+
+func (task *Task) addSink(sink Sink) {
+	task.sinks = append(task.sinks, sink)
 }
 
 func (task *Task) Run() {
@@ -66,7 +71,11 @@ func (task *Task) run() {
 						filter.DoFilter(data)
 					}
 				}
-				task.sink.DoSink(data)
+				if task.sinkSize > 0 {
+					for _, sink := range task.sinks {
+						sink.DoSink(data)
+					}
+				}
 			} else {
 				return
 			}
@@ -94,13 +103,21 @@ func NewTask(conf TaskConf, parentCtx context.Context, log *zap.Logger) *Task {
 		log:        log,
 		terminated: true,
 		source:     newSource(&conf.Source, ctx, log),
-		sink:       newSink(&conf.Sink, ctx, log),
 	}
+	// create filters
 	for _, value := range conf.Filters {
 		fc := value
 		if f := newFilter(&fc, ctx, log); f != nil {
 			task.addFilter(f)
 			task.filterSize += 1
+		}
+	}
+	// create sink
+	for _, value := range conf.Sinks {
+		fc := value
+		if f := newSink(&fc, ctx, log); f != nil {
+			task.addSink(f)
+			task.sinkSize += 1
 		}
 	}
 	return task
